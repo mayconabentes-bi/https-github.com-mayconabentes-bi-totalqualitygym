@@ -1,0 +1,348 @@
+{
+  "entities": {
+    "Tenant": {
+      "title": "Tenant",
+      "description": "A business unit (gym branch) of Academia AREA FIT.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the gym unit." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Staff member of the academy.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { 
+          "type": "string", 
+          "enum": ["direction", "partner", "technical_advice", "teacher"],
+          "description": "Role according to the organogram."
+        },
+        "tenantId": { "type": "string", "description": "Reference to the Tenant document ID." },
+        "email_verified": { "type": "boolean" }
+      },
+      "required": ["email", "role", "tenantId"]
+    },
+    "QualityPolicy": {
+      "title": "Quality Policy",
+      "description": "The official quality policy document (POL-AF-001).",
+      "type": "object",
+      "properties": {
+        "content": { "type": "string", "description": "The text content of the policy." },
+        "version": { "type": "string", "description": "Version string (e.g., Rev 00)." },
+        "status": { 
+          "type": "string", 
+          "enum": ["DRAFT", "UNDER_REVIEW", "APPROVED", "PUBLISHED", "SUPERSEDED"] 
+        },
+        "approvalDate": { "type": "string", "format": "date-time" },
+        "approvedBy": { "type": "string", "description": "Name of the approver." },
+        "tenantId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["content", "version", "status", "tenantId"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "History of document state changes.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "action": { "type": "string" },
+        "documentId": { "type": "string" },
+        "previousStatus": { "type": "string" },
+        "newStatus": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "tenantId": { "type": "string" }
+      }
+    },
+    "Stakeholder": {
+      "title": "Stakeholder",
+      "description": "Interested parties for the SGQ.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "needs": { "type": "string" },
+        "expectations": { "type": "string" },
+        "tenantId": { "type": "string" }
+      },
+      "required": ["name", "tenantId"]
+    },
+    "QualityObjective": {
+      "title": "Quality Objective",
+      "description": "Specific measurable objectives linked to the policy.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "target": { "type": "string" },
+        "result": { "type": "string" },
+        "planId": { "type": "string" },
+        "tenantId": { "type": "string" }
+      },
+      "required": ["title", "tenantId"]
+    },
+    "AuditProgram": {
+      "title": "Audit Program",
+      "description": "Annual schedule for auditing processes.",
+      "type": "object",
+      "properties": {
+        "year": { "type": "integer" },
+        "processName": { "type": "string" },
+        "targetMonth": { "type": "integer" },
+        "tenantId": { "type": "string" }
+      }
+    },
+    "AuditPlan": {
+      "title": "Audit Plan",
+      "description": "The operational contract for a specific audit event.",
+      "type": "object",
+      "properties": {
+        "programId": { "type": "string" },
+        "status": { "type": "string", "enum": ["DRAFT", "SCHEDULED", "IN_PROGRESS", "COMPLETED"] },
+        "auditorLeaderId": { "type": "string" },
+        "scope": { "type": "string" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "tenantId": { "type": "string" }
+      }
+    },
+    "AuditScheduleItem": {
+      "title": "Audit Schedule Item",
+      "description": "Specific activity within an audit event.",
+      "type": "object",
+      "properties": {
+        "planId": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "activity": { "type": "string" }
+      }
+    },
+    "AuditReport": {
+      "title": "Audit Report",
+      "description": "The final document summarizing findings and conclusions of an audit.",
+      "type": "object",
+      "properties": {
+        "planId": { "type": "string" },
+        "summary": { "type": "string" },
+        "conclusion": { "type": "string" },
+        "status": { "type": "string", "enum": ["DRAFT", "APPROVED"] },
+        "score": { "type": "number" },
+        "tenantId": { "type": "string" }
+      }
+    },
+    "AuditResponse": {
+      "title": "Audit Response",
+      "description": "A finding or answer for a specific checklist item.",
+      "type": "object",
+      "properties": {
+        "planId": { "type": "string" },
+        "itemId": { "type": "string" },
+        "status": { "type": "string", "enum": ["C", "NC", "NA"] },
+        "observations": { "type": "string" },
+        "auditorId": { "type": "string" },
+        "tenantId": { "type": "string" }
+      }
+    },
+    "AuditChecklistItem": {
+      "title": "Audit Checklist Item",
+      "description": "A template requirement for an audit.",
+      "type": "object",
+      "properties": {
+        "requirement": { "type": "string" },
+        "itemToVerify": { "type": "string" },
+        "evidenceToLookFor": { "type": "string" }
+      }
+    },
+    "StrategicPlan": {
+      "title": "Strategic Planning",
+      "description": "The strategic planning framework for a period.",
+      "type": "object",
+      "properties": {
+        "year": { "type": "integer" },
+        "mission": { "type": "string" },
+        "vision": { "type": "string" },
+        "values": { "type": "string" },
+        "tenantId": { "type": "string" }
+      },
+      "required": ["year", "tenantId"]
+    },
+    "AuditorEvaluation": {
+      "title": "Auditor Evaluation",
+      "description": "Feedback from auditees regarding the auditor's performance.",
+      "type": "object",
+      "properties": {
+        "reportId": { "type": "string" },
+        "auditorId": { "type": "string" },
+        "auditeeId": { "type": "string" },
+        "scores": { "type": "object" },
+        "averageScore": { "type": "number" },
+        "comments": { "type": "string" },
+        "tenantId": { "type": "string" }
+      }
+    },
+    "NonConformity": {
+      "title": "Non Conformity",
+      "description": "Records of failures to meet requirements as per POP.SGQ.12.",
+      "type": "object",
+      "properties": {
+        "tenantId": { "type": "string" },
+        "source": { "type": "string", "enum": ["Professor", "Aluno/Reclamação", "Auditoria Interna", "Indicador", "Incidente"] },
+        "description": { "type": "string" },
+        "immediateAction": { "type": "string" },
+        "gravity": { "type": "string", "enum": ["Baixa", "Média", "Alta", "Crítica"] },
+        "status": { "type": "string", "enum": ["Aberta", "Em Análise", "RAC Aberta", "Concluída"] },
+        "identifiedById": { "type": "string" },
+        "identifiedByName": { "type": "string" },
+        "auditPlanId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "CorrectiveAction": {
+      "title": "RAC - Registro de Ação Corretiva",
+      "description": "Corrective action plan based on Ishikawa 6M analysis and action items.",
+      "type": "object",
+      "properties": {
+        "ncId": { "type": "string" },
+        "rootCause": { "type": "string" },
+        "analysis6M": { "type": "object" },
+        "actionPlan": { "type": "array" },
+        "verification": { "type": "object" },
+        "status": { "type": "string", "enum": ["PLANNING", "IMPLEMENTING", "VERIFYING", "CLOSED", "REOPENED"] },
+        "tenantId": { "type": "string" }
+      }
+    },
+    "GamificationProfile": {
+      "title": "Gamification Profile",
+      "description": "User XP, Level and Badges.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "totalXp": { "type": "number" },
+        "level": { "type": "number" },
+        "warriorRank": { "type": "string" },
+        "badges": { "type": "array" },
+        "modality": { "type": "string" }
+      }
+    }
+    "EnrollmentSession": {
+      "title": "Enrollment Session",
+      "description": "Active enrollment process tracking.",
+      "type": "object",
+      "properties": {
+        "tenantId": { "type": "string" },
+        "token": { "type": "string" },
+        "currentStep": { "type": "string", "enum": ["IDENTIDADE", "PLANO", "BIOMETRIA", "ASSINATURA", "PAGAMENTO"] },
+        "channel": { "type": "string", "enum": ["ONLINE", "PRESENCIAL"] },
+        "qualityPolicyAccepted": { "type": "boolean" },
+        "data": { "type": "object" }
+      }
+    },
+    "Contract": {
+      "title": "Contract",
+      "description": "Signed service contracts.",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string" },
+        "planId": { "type": "string" },
+        "signedAt": { "type": "string", "format": "date-time" },
+        "isMinor": { "type": "boolean" },
+        "guardianCpf": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/tenants/{tenantId}/enrollment_sessions/{sessionId}": {
+      "schema": "EnrollmentSession",
+      "description": "Stateful enrollment sessions."
+    },
+    "/tenants/{tenantId}/contracts/{contractId}": {
+      "schema": "Contract",
+      "description": "Repository of signed contracts."
+    },
+    "/tenants/{tenantId}/subscriptions/{subscriptionId}": {
+      "schema": "Subscription",
+      "description": "Student active subscriptions."
+    },
+    "/tenants/{tenantId}/invoices/{invoiceId}": {
+      "schema": "Invoice",
+      "description": "Billing records and payment status."
+    },
+    "/tenants/{tenantId}/gamification_profiles/{profileId}": {
+      "schema": "GamificationProfile",
+      "description": "Gamification profiles per tenant."
+    },
+    "/tenants/{tenantId}": {
+      "schema": "Tenant",
+      "description": "Academy units."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Staff profiles."
+    },
+    "/tenants/{tenantId}/non_conformities/{id}": {
+      "schema": "NonConformity",
+      "description": "Non-conformity records (POP.SGQ.12)."
+    },
+    "/tenants/{tenantId}/corrective_actions/{id}": {
+      "schema": "CorrectiveAction",
+      "description": "Corrective action plans (RAC) linked to NCs."
+    },
+    "/tenants/{tenantId}/policies/{policyId}": {
+      "schema": "QualityPolicy",
+      "description": "Policy version history for a tenant."
+    },
+    "/tenants/{tenantId}/stakeholders/{stakeholderId}": {
+      "schema": "Stakeholder",
+      "description": "Stakeholders for a tenant."
+    },
+    "/tenants/{tenantId}/plans/{planId}": {
+      "schema": "StrategicPlan",
+      "description": "Strategic plans for a tenant."
+    },
+    "/tenants/{tenantId}/objectives/{objectiveId}": {
+      "schema": "QualityObjective",
+      "description": "Tactical objectives for a tenant."
+    },
+    "/tenants/{tenantId}/audit_programs/{id}": {
+      "schema": "AuditProgram",
+      "description": "Annual audit planning."
+    },
+    "/tenants/{tenantId}/audit_plans/{id}": {
+      "schema": "AuditPlan",
+      "description": "Specific audit execution plans."
+    },
+    "/tenants/{tenantId}/audit_plans/{planId}/schedule/{id}": {
+      "schema": "AuditScheduleItem",
+      "description": "Detailed activities for an audit."
+    },
+    "/tenants/{tenantId}/audit_plans/{planId}/responses/{id}": {
+      "schema": "AuditResponse",
+      "description": "Captured findings for an audit plan."
+    },
+    "/tenants/{tenantId}/audit_reports/{id}": {
+      "schema": "AuditReport",
+      "description": "Final audit documentation."
+    },
+    "/tenants/{tenantId}/auditor_evaluations/{id}": {
+      "schema": "AuditorEvaluation",
+      "description": "Auditor performance evaluations."
+    },
+    "/tenants/{tenantId}/audit_checklists/{id}": {
+      "schema": "AuditChecklistItem",
+      "description": "Requirements library for audits."
+    },
+    "/tenants/{tenantId}/metrics/{metricId}": {
+      "schema": "PerformanceMetric",
+      "description": "Historical performance data points."
+    },
+    "/tenants/{tenantId}/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Audit logs for document transitions."
+    }
+  }
+}
