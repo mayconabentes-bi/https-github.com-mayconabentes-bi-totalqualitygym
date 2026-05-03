@@ -1,0 +1,8 @@
+{
+  "name": "PROJ_SGQ_AREAFIT",
+  "description": "Sistema de Gestão da Qualidade (SGQ) multi-tenant para a Academia AREA FIT com Supabase Auth e PostgreSQL como infraestrutura principal.",
+  "provider": "Supabase",
+  "database": "PostgreSQL",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
