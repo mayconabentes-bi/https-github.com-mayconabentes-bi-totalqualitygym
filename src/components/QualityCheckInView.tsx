@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, addDoc, limit } from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType } from '../lib/supabase';
+import { collection, query, where, orderBy, onSnapshot, addDoc, limit } from '@/lib/supabase';
 import { QualityCheckIn, UserProfile } from '../types';
 import { CheckCircle2, ClipboardCheck, History, Info, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

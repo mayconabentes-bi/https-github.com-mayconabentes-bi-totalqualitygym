@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../lib/firebase';
+import { db } from '../lib/supabase';
 import { 
   collection, query, where, onSnapshot 
-} from 'firebase/firestore';
+} from '@/lib/supabase';
 import { UserProfile } from '../types';
 import { 
   Trophy, Medal, Award, TrendingUp, 

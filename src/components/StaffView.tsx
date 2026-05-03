@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType } from '../lib/supabase';
+import { collection, query, where, onSnapshot } from '@/lib/supabase';
 import { UserProfile, UserRole } from '../types';
 import { Users, Shield, UserCheck, GraduationCap, ChevronDown, Network } from 'lucide-react';
 import { motion } from 'motion/react';

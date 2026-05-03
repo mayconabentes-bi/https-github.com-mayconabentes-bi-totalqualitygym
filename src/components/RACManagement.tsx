@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, handleFirestoreError, OperationType } from '../lib/supabase';
 import { 
   collection, query, where, onSnapshot, doc, 
   updateDoc, getDocs 
-} from 'firebase/firestore';
+} from '@/lib/supabase';
 import { NonConformity, UserProfile, Ishikawa6M, CorrectiveAction, ActionPlanItem, EffectivenessVerification } from '../types';
 import { 
   AlertTriangle, ShieldAlert, ChevronRight, 
@@ -33,6 +33,7 @@ export default function RACManagement({ profile }: Props) {
 
   // Buffer for progressive creation
   const [tempIshikawa, setTempIshikawa] = useState<{ analysis: Ishikawa6M, rootCause: string } | null>(null);
+  const [tempRacId, setTempRacId] = useState<string | null>(null);
 
   useEffect(() => {
     // Lead Users for responsibles
@@ -57,6 +58,7 @@ export default function RACManagement({ profile }: Props) {
 
   const handleSaveIshikawa = (analysis: Ishikawa6M, rootCause: string) => {
     setTempIshikawa({ analysis, rootCause });
+    setTempRacId(crypto.randomUUID());
     setViewState('PLAN');
   };
 
@@ -65,7 +67,7 @@ export default function RACManagement({ profile }: Props) {
     setSaving(true);
     
     try {
-      const racId = Math.random().toString(36).substr(2, 9);
+      const racId = tempRacId || crypto.randomUUID();
       const racData: Omit<CorrectiveAction, 'id'> = {
         ncId: selectedNc.id,
         tenantId: profile.tenantId,
@@ -92,6 +94,7 @@ export default function RACManagement({ profile }: Props) {
       setViewState('LIST');
       setSelectedNc(null);
       setTempIshikawa(null);
+      setTempRacId(null);
     } catch (err: any) {
       alert(err.message);
     } finally {
@@ -212,7 +215,7 @@ export default function RACManagement({ profile }: Props) {
 
         {viewState === 'PLAN' && (
            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <ActionPlanForm users={users} onSave={handleSavePlan} onCancel={() => setViewState('ISHIKAWA')} />
+              <ActionPlanForm racId={tempRacId || crypto.randomUUID()} users={users} onSave={handleSavePlan} onCancel={() => setViewState('ISHIKAWA')} />
            </motion.div>
         )}
 

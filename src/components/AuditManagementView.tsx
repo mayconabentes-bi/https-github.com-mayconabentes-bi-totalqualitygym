@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, getDocs, orderBy, collectionGroup } from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType } from '../lib/supabase';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, getDocs, orderBy, collectionGroup } from '@/lib/supabase';
 import { AuditProgram, AuditPlan, AuditScheduleItem, UserProfile, AuditStatus } from '../types';
 import { 
   Calendar, ClipboardList, CheckCircle, Clock, AlertCircle, 

@@ -2,24 +2,34 @@ import React, { useState } from 'react';
 import { 
   Plus, X, User, Calendar, 
   Settings, Target, Save, 
-  ClipboardList, ArrowRight, Loader2 
+  ClipboardList, ArrowRight, Loader2, Info, AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import type { Database } from '../types/supabase';
 import { ActionPlanItem, UserProfile } from '../types';
 
+type ActionPlanItemInsert = Database['public']['Tables']['action_plan_items']['Insert'];
+
 interface Props {
+  racId: string;
   onSave: (items: ActionPlanItem[]) => void;
   onCancel: () => void;
   users: UserProfile[];
 }
 
-export default function ActionPlanForm({ onSave, onCancel, users }: Props) {
+export default function ActionPlanForm({ racId, onSave, onCancel, users }: Props) {
+  const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<Partial<ActionPlanItem>[]>([
-    { id: Math.random().toString(36).substr(2, 9), action: '', responsibleId: '', deadline: '', executionMethod: '', effectivenessCriteria: '', status: 'Pending' }
+    { id: crypto.randomUUID(), action: '', responsibleId: '', deadline: '', executionMethod: '', effectivenessCriteria: '', status: 'Pending' }
   ]);
 
   const addItem = () => {
-    setItems([...items, { id: Math.random().toString(36).substr(2, 9), action: '', responsibleId: '', deadline: '', executionMethod: '', effectivenessCriteria: '', status: 'Pending' }]);
+    setItems([...items, { id: crypto.randomUUID(), action: '', responsibleId: '', deadline: '', executionMethod: '', effectivenessCriteria: '', status: 'Pending' }]);
   };
 
   const removeItem = (id: string) => {
@@ -32,11 +42,20 @@ export default function ActionPlanForm({ onSave, onCancel, users }: Props) {
     setItems(items.map(i => i.id === id ? { ...i, [field]: value } : i));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setError(null);
+    setSuccess(null);
+
     // Basic validation
     const valid = items.every(i => i.action && i.responsibleId && i.deadline);
     if (!valid) {
-      alert("Por favor, preencha todos os campos obrigatórios (Ação, Responsável e Prazo).");
+      setError('Por favor, preencha todos os campos obrigatórios (Ação, Responsável e Prazo).');
+      return;
+    }
+
+    const tenantId = user?.app_metadata?.tenant_id as string | undefined;
+    if (!tenantId) {
+      setError('Contexto de tenant ausente na sessão autenticada.');
       return;
     }
     
@@ -46,6 +65,31 @@ export default function ActionPlanForm({ onSave, onCancel, users }: Props) {
       return { ...i, responsibleName: user?.displayName || 'N/A' } as ActionPlanItem;
     });
 
+    const payload: ActionPlanItemInsert[] = finalItems.map((item) => ({
+      id: item.id,
+      rac_id: racId,
+      tenant_id: tenantId,
+      action_text: item.action,
+      responsible_id: item.responsibleId,
+      deadline: item.deadline,
+      execution_method: item.executionMethod || '',
+      effectiveness_criteria: item.effectivenessCriteria || '',
+      status: item.status === 'Completed' ? 'Completed' : 'Pending',
+      completed_at: item.status === 'Completed' ? new Date().toISOString() : null,
+    }));
+
+    setSaving(true);
+    const { error: upsertError } = await supabase
+      .from('action_plan_items')
+      .upsert(payload, { onConflict: 'id' });
+    setSaving(false);
+
+    if (upsertError) {
+      setError(upsertError.message);
+      return;
+    }
+
+    setSuccess('Plano salvo no cofre SGQ com sucesso.');
     onSave(finalItems);
   };
 
@@ -157,11 +201,23 @@ export default function ActionPlanForm({ onSave, onCancel, users }: Props) {
         </button>
         <div className="flex gap-4">
            <button onClick={onCancel} className="px-8 py-4 bg-[#E4E3E0] text-[#141414] rounded-2xl font-bold uppercase text-[10px] tracking-widest">Cancelar</button>
-           <button onClick={handleSave} className="px-10 py-4 bg-[#141414] text-white rounded-2xl font-bold uppercase text-[10px] tracking-widest flex items-center gap-2 shadow-xl hover:bg-black">
-              Prosseguir <ArrowRight className="w-4 h-4" />
+           <button disabled={saving} onClick={handleSave} className="px-10 py-4 bg-[#141414] text-white rounded-2xl font-bold uppercase text-[10px] tracking-widest flex items-center gap-2 shadow-xl hover:bg-black disabled:opacity-50">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Prosseguir <ArrowRight className="w-4 h-4" /></>}
            </button>
         </div>
       </div>
+
+      {error && (
+        <div className="p-4 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3 text-xs font-bold uppercase border border-red-100">
+          <AlertTriangle className="w-4 h-4" /> {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="p-4 bg-green-50 text-green-700 rounded-2xl flex items-center gap-3 text-xs font-bold uppercase border border-green-100">
+          <Info className="w-4 h-4" /> {success}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType } from '../lib/supabase';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc } from '@/lib/supabase';
 import { StrategicPlan, Stakeholder, QualityObjective, UserProfile } from '../types';
 import { Target, Users, Map, Plus, Save, TrendingUp, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

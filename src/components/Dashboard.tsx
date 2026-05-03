@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import type { Database } from '../types/supabase';
 import { UserProfile } from '../types';
 import { 
   BarChart3, 
@@ -36,6 +39,18 @@ import UnitManagementDashboard from './UnitManagementDashboard';
 
 interface DashboardProps {
   profile: UserProfile;
+}
+
+type EnrollmentSessionRow = Database['public']['Tables']['enrollment_sessions']['Row'];
+type PhysicalAssetRow = Database['public']['Tables']['physical_assets']['Row'];
+type InvoiceRow = Database['public']['Tables']['invoices']['Row'];
+type SubscriptionRow = Database['public']['Tables']['subscriptions']['Row'];
+
+interface OverviewKpis {
+  enrollmentSessions: number;
+  activeSubscriptions: number;
+  criticalAssets: number;
+  grossRevenue: number;
 }
 
 type Tab = 'overview' | 'policy' | 'planning' | 'staff' | 'analytics' | 'checkin' | 'audit' | 'performance' | 'nc' | 'rac' | 'ranks' | 'secretary' | 'student_profile' | 'instructor_class' | 'assets' | 'new_enrollment' | 'expansion';
@@ -207,6 +222,96 @@ export default function Dashboard({ profile }: DashboardProps) {
 }
 
 function Overview({ profile, onNavigate }: { profile: UserProfile, onNavigate: (tab: string) => void }) {
+  const { user, session } = useAuth();
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [kpiData, setKpiData] = React.useState<OverviewKpis>({
+    enrollmentSessions: 0,
+    activeSubscriptions: 0,
+    criticalAssets: 0,
+    grossRevenue: 0,
+  });
+  const [enrollmentRows, setEnrollmentRows] = React.useState<EnrollmentSessionRow[]>([]);
+  const [criticalAssetRows, setCriticalAssetRows] = React.useState<PhysicalAssetRow[]>([]);
+  const [invoiceRows, setInvoiceRows] = React.useState<InvoiceRow[]>([]);
+  const [subscriptionRows, setSubscriptionRows] = React.useState<SubscriptionRow[]>([]);
+
+  React.useEffect(() => {
+    const authTenantId = user?.app_metadata?.tenant_id as string | undefined;
+
+    if (!session || !user || !authTenantId) {
+      setKpiData({
+        enrollmentSessions: 0,
+        activeSubscriptions: 0,
+        criticalAssets: 0,
+        grossRevenue: 0,
+      });
+      setEnrollmentRows([]);
+      setCriticalAssetRows([]);
+      setInvoiceRows([]);
+      setSubscriptionRows([]);
+      setLoading(false);
+      return;
+    }
+
+    const fetchOverviewKpis = async () => {
+      setLoading(true);
+
+      const [enrollmentResult, criticalAssetsResult, subscriptionsResult, invoicesResult] = await Promise.all([
+        supabase
+          .from('enrollment_sessions')
+          .select('*')
+          .eq('tenant_id', authTenantId),
+        supabase
+          .from('physical_assets')
+          .select('*')
+          .eq('tenant_id', authTenantId)
+          .eq('status', 'CRITICO'),
+        supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('tenant_id', authTenantId)
+          .eq('status', 'ACTIVE'),
+        supabase
+          .from('invoices')
+          .select('*')
+          .eq('tenant_id', authTenantId)
+          .eq('payment_status', 'PAID'),
+      ]);
+
+      const enrollmentData = (enrollmentResult.data ?? []) as EnrollmentSessionRow[];
+      const criticalAssetsData = (criticalAssetsResult.data ?? []) as PhysicalAssetRow[];
+      const subscriptionsData = (subscriptionsResult.data ?? []) as SubscriptionRow[];
+      const invoicesData = (invoicesResult.data ?? []) as InvoiceRow[];
+
+      setEnrollmentRows(enrollmentData);
+      setCriticalAssetRows(criticalAssetsData);
+      setSubscriptionRows(subscriptionsData);
+      setInvoiceRows(invoicesData);
+
+      const revenueTotal = invoicesData.reduce((sum, invoice) => {
+        return sum + Number(invoice.amount_final ?? 0);
+      }, 0);
+
+      setKpiData({
+        enrollmentSessions: enrollmentData.length,
+        activeSubscriptions: subscriptionsData.length,
+        criticalAssets: criticalAssetsData.length,
+        grossRevenue: revenueTotal,
+      });
+      setLoading(false);
+    };
+
+    fetchOverviewKpis();
+  }, [session, user]);
+
+  const currencyFormatter = React.useMemo(() => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 0,
+    });
+  }, []);
+
   return (
     <div className="space-y-10 p-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-4 border-b border-slate-800">
@@ -232,8 +337,8 @@ function Overview({ profile, onNavigate }: { profile: UserProfile, onNavigate: (
           <StatCard 
             icon={Zap} 
             label="Cashback / XP Bruto" 
-            value="15.4k" 
-            sub="R$ 154.00 convertidos" 
+            value={loading ? 'SYNC' : String(kpiData.enrollmentSessions)}
+            sub={loading ? 'Aguardando telemetria' : `${enrollmentRows.length} sessões de matrícula`}
             color="amber-500"
           />
         </div>
@@ -241,8 +346,8 @@ function Overview({ profile, onNavigate }: { profile: UserProfile, onNavigate: (
           <StatCard 
             icon={TrendingUp} 
             label="Performance MRR" 
-            value="84%" 
-            sub="↑ 12% vs mês anterior" 
+            value={loading ? 'SYNC' : `${kpiData.activeSubscriptions}`}
+            sub={loading ? 'Sincronizando assinaturas' : `${subscriptionRows.length} assinaturas ativas`}
             color="emerald-500"
           />
         </div>
@@ -250,8 +355,8 @@ function Overview({ profile, onNavigate }: { profile: UserProfile, onNavigate: (
           <StatCard 
              icon={AlertTriangle} 
              label="Ativos Críticos" 
-             value="02" 
-             sub="Pulse lockdown ativo" 
+             value={loading ? 'SYNC' : String(kpiData.criticalAssets)}
+             sub={loading ? 'Varredura de ativos em progresso' : `${criticalAssetRows.length} ativos em estado CRITICO`}
              color="red-500"
           />
         </div>
@@ -259,8 +364,8 @@ function Overview({ profile, onNavigate }: { profile: UserProfile, onNavigate: (
           <StatCard 
             icon={Globe} 
             label="Deployments" 
-            value="05" 
-            sub="Edge nodes sincronizados" 
+            value={loading ? 'SYNC' : currencyFormatter.format(kpiData.grossRevenue)}
+            sub={loading ? 'Consolidando faturas pagas' : `${invoiceRows.length} faturas liquidadas`}
             color="slate-400"
           />
         </div>

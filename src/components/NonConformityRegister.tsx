@@ -4,7 +4,12 @@ import {
   User, ShieldAlert, ChevronRight, ClipboardList 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import type { Database } from '../types/supabase';
 import { UserProfile, NCSource, NCGravity } from '../types';
+
+type NonConformityInsert = Database['public']['Tables']['non_conformities']['Insert'];
 
 interface Props {
   profile: UserProfile;
@@ -12,6 +17,7 @@ interface Props {
 }
 
 export default function NonConformityRegister({ profile, onSuccess }: Props) {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,23 +35,26 @@ export default function NonConformityRegister({ profile, onSuccess }: Props) {
     setLoading(true);
     setError(null);
 
-    const payload = {
+    const tenantId = user?.app_metadata?.tenant_id as string | undefined;
+    if (!tenantId) {
+      setError('Tenant indisponível na sessão autenticada.');
+      setLoading(false);
+      return;
+    }
+
+    const payload: NonConformityInsert = {
       ...formData,
-      tenant_id: profile.tenantId,
-      identified_by_id: profile.id
+      tenant_id: tenantId,
+      identified_by_id: user?.id || profile.id,
+      status: 'Aberta',
+      audit_plan_id: formData.audit_plan_id || null,
     };
 
     try {
-      const response = await fetch('/api/nc/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const text = await response.text();
-      const result = text ? JSON.parse(text) : {};
-      
-      if (!response.ok) throw new Error(result.error || 'Falha ao registrar NC.');
+      const { error: insertError } = await supabase.from('non_conformities').insert(payload);
+      if (insertError) {
+        throw new Error(insertError.message || 'Falha ao registrar NC.');
+      }
 
       // Grant XP if the user is a student (Quality Report Bonus)
       fetch('/api/gamification/grant-xp', {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, handleFirestoreError, OperationType } from '../lib/supabase';
 import { 
   collection, query, where, getDocs, doc, setDoc, 
   updateDoc, onSnapshot 
-} from 'firebase/firestore';
+} from '@/lib/supabase';
 import { 
   AuditPlan, AuditReport, AuditResponse, AuditChecklistItem, UserProfile, AuditorEvaluation 
 } from '../types';
