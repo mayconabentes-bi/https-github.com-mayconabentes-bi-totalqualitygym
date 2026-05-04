@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "mcp:smoke": "node scripts/mcp-smoke-test.mjs",
     "update-types": "supabase gen types typescript --project-id YOUR_ID > src/types/supabase.ts"
   },
   "dependencies": {

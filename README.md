@@ -31,3 +31,11 @@ Configure the following environment variables before starting the app:
 2. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local`
 3. Run the app:
    `npm run dev`
+
+## MCP (Fase Inicial)
+
+- Workspace MCP config: `.vscode/mcp.json`
+- Supabase MCP server connected to project ref `hmxeyfprjhuejyijpwep`
+- Setup details: `docs/MCP_INTEGRATION.md`
+- Phase 2 SQL: `sql/mcp_phase2_hardening.sql`
+- Smoke test: `npm run mcp:smoke`
