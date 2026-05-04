@@ -42,7 +42,7 @@ export default function AuditReportView({ profile, plan, onBack }: Props) {
       collection(db, 'tenants', profile.tenantId, 'audit_reports'),
       where('planId', '==', plan.id)
     ), (snap) => {
-      if (!snap.empty) {
+      if (snap.docs.length > 0) {
         const data = { id: snap.docs[0].id, ...snap.docs[0].data() } as AuditReport;
         setReport(data);
         setSummary(data.summary);
@@ -66,7 +66,7 @@ export default function AuditReportView({ profile, plan, onBack }: Props) {
       where('auditeeId', '==', profile.id)
     );
     const snap = await getDocs(q);
-    setAlreadyEvaluated(!snap.empty);
+    setAlreadyEvaluated(snap.docs.length > 0);
   };
 
   const generateReportDraft = async () => {
@@ -74,7 +74,7 @@ export default function AuditReportView({ profile, plan, onBack }: Props) {
     try {
       // 1. Fetch Responses
       const respSnap = await getDocs(collection(db, 'tenants', profile.tenantId, 'audit_plans', plan.id, 'responses'));
-      const responses = respSnap.docs.map(d => d.data() as AuditResponse);
+      const responses = respSnap.docs.map(d => d.data() as unknown as AuditResponse);
       const nCs = responses.filter(r => r.status === 'NC');
 
       // 2. Fetch Checklist Items to get requirements/descriptions

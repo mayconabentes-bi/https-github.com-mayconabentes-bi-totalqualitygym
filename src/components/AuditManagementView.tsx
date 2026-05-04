@@ -306,7 +306,7 @@ function AuditModal({ profile, selectedProgram, onClose }: { profile: UserProfil
         );
         const existing = await getDocs(q);
         const hasConflict = existing.docs.some(d => {
-            const p = d.data() as AuditPlan;
+          const p = d.data() as unknown as AuditPlan;
             const start = new Date(formData.startTime);
             const end = new Date(formData.endTime);
             const pStart = new Date(p.startTime);
