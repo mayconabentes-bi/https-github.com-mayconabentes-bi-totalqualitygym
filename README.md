@@ -37,5 +37,7 @@ Configure the following environment variables before starting the app:
 - Workspace MCP config: `.vscode/mcp.json`
 - Supabase MCP server connected to project ref `hmxeyfprjhuejyijpwep`
 - Setup details: `docs/MCP_INTEGRATION.md`
+- Daily operational tools: `docs/MCP_DAILY_TOOLS.md`
+- Homologation checklist: `docs/HOMOLOGACAO_CHECKLIST_AMANHA.md`
 - Phase 2 SQL: `sql/mcp_phase2_hardening.sql`
 - Smoke test: `npm run mcp:smoke`

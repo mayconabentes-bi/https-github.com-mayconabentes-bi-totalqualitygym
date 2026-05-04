@@ -53,3 +53,47 @@ Saida esperada:
 - `[OK] mcp_list_non_conformities`
 - `[OK] mcp_list_corrective_actions`
 - `[OK] mcp_list_assets_attention`
+
+## Fluxo Operacional Final (15:00-17:00)
+
+Rodada aplicada nesta sessao para seguranca/regressao e homologacao:
+
+1. Build web
+
+```bash
+npm run build
+```
+
+2. Build api
+
+```bash
+npm --prefix api run build
+```
+
+3. Testes api
+
+```bash
+npm --prefix api test -- --runInBand
+```
+
+4. Smoke MCP
+
+```bash
+npm run mcp:smoke
+```
+
+## Checkpoint de Homologacao
+
+Status desta rodada:
+
+- Build web: aprovado.
+- Build api: aprovado.
+- Testes api: aprovado.
+- Smoke MCP: aprovado.
+
+## Checklist de Saida para Amanha
+
+- [x] RPCs retornando dados reais.
+- [x] Guardas de tenant validados.
+- [x] Tools MCP iniciais prontas para operacao.
+- [x] Documentacao atualizada.

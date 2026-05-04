@@ -2,6 +2,11 @@
 
 Reference: `security_spec.md` data invariants and abuse cases.
 
+## Current Validation Status
+- Tenant guards in SGQ write paths are active and validated.
+- RLS protections for tenant-scoped SGQ core tables were validated in homologation flow.
+- MCP read RPCs are returning real data in smoke and daily tool runs.
+
 ## Required Policy Dimensions
 - Tenant isolation: `tenant_id` (or equivalent tenant relation) must match authenticated user tenant.
 - Role-gated write paths: `direction` and `partner` can approve/version quality policy and strategic artifacts.
