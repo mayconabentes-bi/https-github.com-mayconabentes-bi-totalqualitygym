@@ -68,7 +68,7 @@ export default function AuditorEvaluationForm({ profile, plan, reportId, onCompl
         where('auditorId', '==', plan.auditorLeaderId)
       ));
       
-      const allEvals = evalsSnap.docs.map(d => d.data() as AuditorEvaluation);
+      const allEvals = evalsSnap.docs.map(d => d.data() as unknown as AuditorEvaluation);
       const globalAvg = allEvals.reduce((sum: number, e: AuditorEvaluation) => sum + e.averageScore, 0) / (allEvals.length || 1);
       
       await updateDoc(doc(db, 'users', plan.auditorLeaderId), {

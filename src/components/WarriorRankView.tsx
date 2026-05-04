@@ -491,6 +491,7 @@ export default function WarriorRankView({ profile }: Props) {
 }
 
 interface WarriorListItemProps {
+  key?: React.Key;
   player: LeaderboardItem | QualityChampion;
   idx: number;
   isQuality?: boolean;
